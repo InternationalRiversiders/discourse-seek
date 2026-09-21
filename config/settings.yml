@@ -1,0 +1,16 @@
+plugins:
+  food_enabled:
+    default: false
+    client: true
+  food_read_only:
+    default: true
+  food_admin_only:
+    default: false
+  food_public_browse:
+    default: true
+  food_allowed_groups:
+    default: ""
+    type: group_list
+  food_admin_groups:
+    default: ""
+    type: group_list

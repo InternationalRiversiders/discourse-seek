@@ -1,0 +1,8 @@
+en:
+  site_settings:
+    food_enabled: "启用觅电"
+    food_allowed_groups: "允许使用觅电的用户组（管理员始终可用）"
+    food_admin_groups: "允许管理觅电的用户组"
+    food_read_only: "只读预览，禁止写入与通知发送"
+    food_admin_only: "仅管理员可访问（私有验收）"
+    food_public_browse: "允许游客浏览公开门店和点评"

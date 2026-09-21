@@ -1,0 +1,9 @@
+DiscourseSeek::Engine.routes.draw do
+    get "/" => "main#index"
+    get "/state" => "main#state"
+    post "/action" => "main#mutate"
+    post "/upload" => "main#upload"
+    get "/media/:id" => "main#media"
+    get "/my-data" => "main#export"
+    get "/legacy(/*path)" => "main#legacy"
+  end

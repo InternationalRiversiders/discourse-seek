@@ -1,0 +1,17 @@
+.env
+.env.*
+*.log
+node_modules/
+tmp/
+*.dump
+*.sql
+*.tar.gz
+*.pem
+*.key
+*-login.json
+*legacy-export*.json
+*legacy-export*.media/
+*forum-users*.json
+*verification*.json
+playwright-report/
+test-results/
