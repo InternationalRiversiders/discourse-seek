@@ -47,3 +47,16 @@
   @media(max-width:600px) { margin-top:0; .food-header { padding-top:16px; h1 { font-size:1.8em; } p { font-size:.85em; } >.btn { white-space:nowrap; padding:8px; } } .food-nav { gap:0; a { padding:10px; } } .food-discovery { padding:16px; } .food-grid { gap:14px; grid-template-columns:1fr; } .food-shop { display:grid; grid-template-columns:110px minmax(0,1fr); } .food-shop-cover { aspect-ratio:auto; min-height:155px; height:100%; } .food-shop-content { padding:12px; } .food-shop-score { gap:5px 10px; } .food-shop-excerpt { margin:8px 0 0; } .food-tags { margin-bottom:0; } .food-search select { flex:1 1 100px; } .food-detail-head { flex-direction:column; gap:8px; .food-actions { max-width:none; } } .food-overview { grid-template-columns:1fr; } .food-toolbar { align-items:flex-start; flex-direction:column; select { margin:0 8px 0 0; } } .food-entry { gap:9px; &.is-reply { margin-left:16px; } } .food-avatar { flex-basis:28px; width:28px; height:28px; font-size:.8em; } .food-photos button,.food-photos.is-gallery button { width:90px; height:85px; } .river-form { padding:15px; } .river-fields { grid-template-columns:1fr; } .food-pagination { gap:10px; font-size:.8em; } .food-dialog { padding:10px; } }
   @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none !important; } }
 }
+
+.food-contributors {
+  padding: 1.25rem; margin: 1rem 0; border: 1px solid var(--primary-low);
+  border-radius: 12px; background: var(--secondary);
+  h2 { display: flex; flex-wrap: wrap; gap: .6rem; align-items: baseline; }
+  h2 small { color: var(--primary-medium); font-size: .8em; font-weight: normal; }
+  ol { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: .75rem; list-style: none; padding: 0; margin: 1rem 0 0; }
+  li { display: flex; align-items: center; gap: .75rem; min-width: 0; padding: .75rem; border-radius: 8px; background: var(--primary-very-low); }
+  li > div { min-width: 0; overflow-wrap: anywhere; }
+  p { margin: .25rem 0 0; font-size: .85em; color: var(--primary-medium); }
+  .food-contributor-rank { font-weight: bold; color: var(--tertiary); flex-shrink: 0; }
+  .food-contributor-first { font-size: .7em; color: var(--tertiary); margin-left: auto; white-space: nowrap; }
+}

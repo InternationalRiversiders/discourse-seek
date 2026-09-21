@@ -78,3 +78,7 @@ RIVER_IMPORT_APPLY=1 RIVER_IMPORT_SHA256=REVIEWED_SHA256 bundle exec rails runne
 `script/regression_test.rb` 只能在设置 `RIVER_DISPOSABLE=1` 且数据库名为 `river_community_test` 的一次性环境运行；会清空该库的 `river_food_*` 表。覆盖权限、只读与幂等、评分和回复、通知、媒体权限、审核冲突、收藏、账号生命周期和历史身份导入。
 
 部署验收还应对照旧服务实际实现核对全部门店、评分、筛选与排序，校验图片、父子回复和历史署名，并用浏览器分别验证访客、校友、管理员、只读预览和深浅主题。
+
+## 正式运行状态
+
+已完成正式迁移，旧域名保留跳转，业务数据和图片由论坛数据库承接。当前功能核对与迁移边界见 [最终复核](docs/final-review.md)。

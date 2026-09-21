@@ -165,6 +165,12 @@ module DiscourseSeek
       diffs=changes.keys.select { |k| p.before_snapshot[k]!=changes[k] }.map { |k| {field:k,before:p.before_snapshot[k],after:changes[k],current:snapshot&.[](k),conflict:snapshot && snapshot[k]!=p.before_snapshot[k] && snapshot[k]!=changes[k]} }
       {id:p.id,title:changes['name'],status:p.status,shop_id:p.shop_id,author:Shared.author(p.user_id),reason:p.reason,review_reason:p.review_reason,created_at:p.created_at,reviewed_at:p.reviewed_at,images:Shared.media_urls(changes['media_ids']),diffs:diffs,stale:shop && p.base_version!=shop.lock_version,review_version:shop&.lock_version,missing_media_count:p.missing_media_count,url:shop && url(shop)}
     end
+    def self.contributors
+      rows=Shop.where(status:'visible').where.not(user_id:nil).group(:user_id).pluck(:user_id,Arel.sql('COUNT(*)'),Arel.sql('MAX(created_at)'))
+      rows.sort_by { |id,count,latest| [-count,-latest.to_f,id] }.each_with_index.map do |(id,count,latest),index|
+        {id:id,rank:index+1,author:Shared.author(id),shop_count:count,latest_contribution:latest}
+      end
+    end
     def self.state(user,q)
       Access.read!(user);view=q['view'].presence || 'discover';write=Access.member?(user) && !SiteSetting.food_read_only
       tabs=[['discover','发现'],['shops','全部店铺'],['favorites','收藏'],['contribute','一起完善'],['about','关于']];tabs<<['admin','管理'] if Access.admin?(user)
@@ -204,7 +210,8 @@ module DiscourseSeek
         end
         rows=Proposal.where(user_id:user.id).order(created_at: :desc,id: :desc).to_a;selected,out[:pagination]=pagination(rows,q);out[:proposals]=selected.map { |p| proposal_card(p,user) }
       when 'about'
-        about=AboutPage.first;visible!(about,user,admin:true) if about;out[:about_html]=PrettyText.cook(about&.body || '觅电 · 校友共建的美食指南')
+        out[:contributors]=contributors
+        about=AboutPage.first;out[:about_updated_at]=about&.updated_at;visible!(about,user,admin:true) if about;out[:about_html]=PrettyText.cook(about&.body || '觅电 · 校友共建的美食指南')
         if about
           out[:comments],out[:pagination]=comments_for(about,user,q);out[:comment_form]=comment_form(about) if write
         end
@@ -212,7 +219,7 @@ module DiscourseSeek
         Access.check!(user,admin:true);out[:part]=q['part'].presence || 'proposals'
         case out[:part]
         when 'proposals'
-          scope=Proposal.all;scope=scope.where(status:q['status'].presence || 'pending') unless q['status']=='all';rows,paging=pagination(scope.order(created_at: :desc,id: :desc).to_a,q);out[:pagination]=paging;out[:proposals]=rows.map { |p| proposal_card(p,user) }
+          scope=Proposal.all;scope=scope.where(before_snapshot:{}) if q['proposal_kind']=='new';scope=scope.where.not(before_snapshot:{}) if q['proposal_kind']=='edit';scope=scope.where(status:q['status'].presence || 'pending') unless q['status']=='all';rows,paging=pagination(scope.order(created_at: :desc,id: :desc).to_a,q);out[:pagination]=paging;out[:proposals]=rows.map { |p| proposal_card(p,user) }
         when 'shops'
           rows,paging=pagination(catalog(user,include_hidden:true),q);out[:shops]=rows;out[:pagination]=paging
         when 'comments'
@@ -361,6 +368,15 @@ module DiscourseSeek
       q=params.to_h.slice('area','category','price','status','sort');q['q']=params['search'] if params['search'];q['min_price']=params['minPrice'] if params['minPrice'];q['max_price']=params['maxPrice'] if params['maxPrice'];q['min_rating']=params['minRating'] if params['minRating']
       if path.start_with?('shops/')
         row=Legacy.find_by(source:'Shop',legacy_id:path.split('/')[1]);return row ? {view:'shop',id:row.target_id,comments_sort:params['commentSort'],comments_filter:params['commentFilter'],dishes_sort:params['dishSort']}.compact : {view:'shops'}
+      end
+      if path=='about'
+        return {view:'admin',part:'about'} if params['mode']=='edit'
+        return {view:'about',comments_sort:params['sort'].presence || 'newest'}
+      end
+      if path=='admin'
+        part={'shops'=>'shops','comments'=>'comments'}.fetch(params['tab'],'proposals')
+        kind={'submissions'=>'new','edits'=>'edit'}[params['tab']]
+        return {view:'admin',part:part,proposal_kind:kind}.compact
       end
       q.merge(view:{'shops'=>'shops','favorites'=>'favorites','submit'=>'contribute','about'=>'about','admin'=>'admin'}.fetch(path,'discover'))
     end

@@ -24,6 +24,35 @@ class SeekTest < Minitest::Test
   def comment(user=@bob,**data)
     A::Comment.find(call(user,'comment',{kind:'Shop',id:@shop.id,body:'好吃的面',rating:5,tags:['好吃']}.merge(data))[:query][:reply])
   end
+  def test_contributors_match_public_shop_counts_and_latest_contribution
+    @shop.update!(created_at:3.days.ago)
+    A::Shop.create!(name:'旧店',area:'南门',user_id:@alice.id,created_at:2.days.ago)
+    2.times { |i| A::Shop.create!(name:"新店#{i}",area:'西门',user_id:@bob.id,created_at:1.day.ago) }
+    A::Shop.create!(name:'隐藏店铺',area:'西门',user_id:@alice.id,status:'hidden')
+    A::HistoricalIdentity.create!(legacy_id:'77',virtual_user_id:-1_000_000_077,username:'历史贡献者')
+    A::Shop.create!(name:'历史店铺',area:'南门',user_id:-1_000_000_077)
+    rows=state(nil,view:'about')[:contributors]
+    assert_equal [@bob.id,@alice.id,-1_000_000_077],rows.map { |r| r[:id] }
+    assert_equal [2,2,1],rows.map { |r| r[:shop_count] }
+    assert_equal [1,2,3],rows.map { |r| r[:rank] }
+    assert rows.last[:author][:historical];refute rows.last[:author][:url]
+    assert state(nil,view:'about')[:about_updated_at]
+  end
+  def test_old_about_sort_edit_and_admin_tabs_use_native_views
+    assert_equal({view:'about',comments_sort:'likes'},A::Service.legacy_query('about',{'sort'=>'likes'}))
+    assert_equal({view:'admin',part:'about'},A::Service.legacy_query('about',{'mode'=>'edit'}))
+    assert_equal({view:'admin',part:'shops'},A::Service.legacy_query('admin',{'tab'=>'shops'}))
+    assert_equal({view:'admin',part:'proposals',proposal_kind:'edit'},A::Service.legacy_query('admin',{'tab'=>'edits'}))
+    call(@alice,'propose',{name:'新店申请',area:'南门',reason:'推荐'})
+    call(@alice,'propose',{shop_id:@shop.id,base_version:@shop.lock_version,name:'门店新名字',area:'南门',reason:'更新'})
+    assert_equal 1,state(@admin,view:'admin',proposal_kind:'new')[:proposals].size
+    assert_equal 1,state(@admin,view:'admin',proposal_kind:'edit')[:proposals].size
+    assert_equal 2,state(@admin,view:'admin',proposal_kind:'all')[:proposals].size
+    session=ActionDispatch::Integration::Session.new(Rails.application);session.host!('community.test')
+    session.get('/food/legacy/about/?sort=oldest&sig=private')
+    assert_equal 302,session.response.status
+    assert_equal({'view'=>'about','comments_sort'=>'oldest'},Rack::Utils.parse_query(URI.parse(session.response.location).query))
+  end
   def test_access_readonly_idempotence_rechecked
     assert_equal 1,state(nil)[:shops].length
     assert_raises(Discourse::InvalidAccess) { call(@outsider,'comment',{kind:'Shop',id:@shop.id,body:'x'}) }
