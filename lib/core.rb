@@ -129,7 +129,8 @@ module DiscourseSeek
       response.headers['Cache-Control']='private, no-store';response.headers['X-Content-Type-Options']='nosniff';send_data(item.bytes,type:'image/jpeg',disposition:'inline')
     end
     def legacy
-      redirect_to('/food?'+Service.legacy_query(params[:path].to_s,params).to_query,allow_other_host:false)
+      query=params.permit(:area,:category,:price,:status,:sort,:search,:minPrice,:maxPrice,:minRating,:commentSort,:commentFilter,:dishSort).to_h
+      redirect_to('/food?'+Service.legacy_query(params[:path].to_s.delete_suffix('/'),query).to_query,allow_other_host:false)
     end
     def export
       Access.check!(current_user);response.headers['Cache-Control']='private, no-store';send_data(JSON.pretty_generate(UserLifecycle.export(current_user.id)),type:'application/json',filename:'my-food-data.json')
