@@ -3,7 +3,7 @@ import { on } from "@ember/modifier";
 import { fn } from "@ember/helper";
 import { eq } from "discourse/truth-helpers";
 import dIcon from "discourse/ui-kit/helpers/d-icon";
-import DRelativeDate from "discourse/ui-kit/d-relative-date";
+import DRelativeDate from "./campus-relative-date";
 const depthClass = (depth) => depth ? "food-entry is-reply" : "food-entry";
 export default class extends Component {
   <template>
