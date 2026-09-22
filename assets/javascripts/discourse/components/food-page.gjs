@@ -32,9 +32,17 @@ export default class extends Component {
   @tracked localFavorites=[];
   dirty=false;
   version=0;
-  mount=modifier(()=>{
+  constructor(){
+    super(...arguments);
     try { const ids=JSON.parse(localStorage.getItem("riverside:food:favorites")||"[]");this.localFavorites=Array.isArray(ids)?ids.filter(Number.isInteger):[]; } catch { this.localFavorites=[]; }
-    if(this.data.view==="favorites" && !this.data.member) { this.navigate({...this.query,ids:this.localFavorites.join(",")},null,true); }
+    // Hydrate a direct guest bookmark once. Reading snapshot inside a modifier
+    // made each response rerun the modifier and request the same list again.
+    if(this.data.view==="favorites" && !this.data.member) {
+      const query={...this.data.q,view:"favorites",ids:this.localFavorites.join(",")};
+      queueMicrotask(()=>{if(!this.isDestroying&&!this.isDestroyed)this.navigate(query,null,true);});
+    }
+  }
+  mount=modifier(()=>{
     const pop=()=>this.navigate(Object.fromEntries(new URLSearchParams(location.search)),null,true);
     const leave=e=>{if(this.dirty){e.preventDefault();e.returnValue="";}};
     const key=e=>{if(e.key==="Escape") { this.photoUrl=null; }};
