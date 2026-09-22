@@ -68,7 +68,7 @@ export default class extends Component {
   @action setQuery(key,value){const q={...this.query,[key]:value};delete q.page;return this.navigate(q);}
   @action select(key,e){return this.setQuery(key,e.target.value);}
   @action page(page){return this.navigate({...this.query,page,seed:this.data.seed||this.query.seed||""});}
-  @action search(e){e.preventDefault();return this.navigate({...Object.fromEntries(new FormData(e.target)),view:this.data.view,seed:this.data.seed||""});}
+  @action search(e){e.preventDefault();return this.navigate({...Object.fromEntries(new FormData(e.target)),view:this.data.view==="discover"?"shops":this.data.view,seed:this.data.seed||""});}
   @action shuffle(){return this.setQuery("seed",Math.floor(Date.now()/1000));}
   @action async execute(operation,data,requestId){
     const result=await ajax("/food/action",{type:"POST",contentType:"application/json",data:JSON.stringify({operation,data,request_id:requestId})});
