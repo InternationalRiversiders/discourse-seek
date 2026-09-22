@@ -8,7 +8,7 @@
 
 enabled_site_setting :food_enabled
 register_asset "stylesheets/food.scss"
-%w[utensils heart star magnifying-glass location-dot rotate plus comment image circle-check pen-to-square trash-can flag link download chevron-right chevron-left].each { |icon| register_svg_icon icon }
+%w[bowl-food coins clock utensils heart star magnifying-glass location-dot rotate plus comment image circle-check pen-to-square trash-can flag link download chevron-right chevron-left].each { |icon| register_svg_icon icon }
 require_relative "lib/engine"
 after_initialize do
   require_relative "lib/core"
