@@ -88,8 +88,8 @@ export default class extends Component {
   }
   <template>
     <main class="food-native" data-view={{this.data.view}} aria-busy={{if this.busy "true" "false"}} {{this.mount}}>
-      <header class="food-header"><div><div class="food-eyebrow">校园生活 · 校友共建</div><h1>{{dIcon "utensils"}} 觅电</h1><p>在熟悉的校园，发现下一顿好吃的。</p></div>{{#if this.data.member}}<a class="btn btn-primary" href="/food?view=contribute" {{on "click" this.visit}}>{{dIcon "plus"}} 推荐新店</a>{{/if}}</header>
-      <nav class="food-nav" aria-label="觅电导航">{{#each this.data.tabs as |tab|}}<a href={{link (hash view=tab.id)}} class={{if (eq this.data.view tab.id) "active"}} aria-current={{if (eq this.data.view tab.id) "page"}} {{on "click" this.visit}}>{{tab.label}}</a>{{/each}}</nav>
+      <h1 class="sr-only">觅电</h1>
+      <nav class="food-nav" aria-label="觅电导航"><div class="food-tab-links">{{#each this.data.tabs as |tab|}}<a href={{link (hash view=tab.id)}} class={{if (eq this.data.view tab.id) "active"}} aria-current={{if (eq this.data.view tab.id) "page"}} {{on "click" this.visit}}>{{tab.label}}</a>{{/each}}</div>{{#if this.data.member}}<a class="btn btn-primary food-create" href="/food?view=contribute" {{on "click" this.visit}}>{{dIcon "plus"}} 推荐新店</a>{{/if}}</nav>
       {{#if this.data.readonly}}<p class="food-banner">当前为只读预览，可以浏览店铺和历史内容。</p>{{/if}}
       {{#if this.error}}<p class="alert alert-error" role="alert">{{this.error}}</p>{{/if}}{{#if this.notice}}<p class="alert alert-success" role="status">{{this.notice}}</p>{{/if}}
       {{#if this.isCatalog}}
