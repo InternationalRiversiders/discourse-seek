@@ -220,3 +220,11 @@
   }
   @media (max-width: 360px) { .food-shop { grid-template-columns: 76px minmax(0,1fr); gap: 10px; padding: 10px; } .food-no-photo small { font-size: 10px; } }
 }
+
+// Forum identity links use Discourse's avatar and native user card.
+.food-forum-user {
+  display: inline-flex; align-items: center; gap: .4em; max-width: 100%;
+  vertical-align: middle; color: var(--primary); font-weight: 600;
+  .avatar { width: 24px; height: 24px; flex: 0 0 24px; border-radius: 50%; }
+  > span { min-width: 0; overflow-wrap: anywhere; }
+}

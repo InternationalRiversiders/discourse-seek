@@ -64,12 +64,17 @@ module DiscourseSeek
     end
     def self.author(uid)
       if uid && uid>0 && (u=User.find_by(id:uid))
-        {name:u.username,url:"/u/#{u.username_lower}",historical:false}
+        forum_user(u).merge(name:u.username,url:"/u/#{u.username_lower}",historical:false)
       elsif uid && (u=HistoricalIdentity.find_by(virtual_user_id:uid))
         {name:u.username,historical:true}
       else
         {name:'校友',historical:false}
       end
+    end
+    # Public forum fields only; callers enforce each feature's anonymity rules.
+    def self.forum_user(id)
+      user = id.is_a?(User) ? id : User.find_by(id: id)
+      user && { id: user.id, username: user.username, avatar_template: user.avatar_template }
     end
     def self.user_name(uid) = author(uid)[:name]
     def self.image(bytes)
