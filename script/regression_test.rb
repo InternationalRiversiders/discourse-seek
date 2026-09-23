@@ -24,6 +24,12 @@ class SeekTest < Minitest::Test
   def comment(user=@bob,**data)
     A::Comment.find(call(user,'comment',{kind:'Shop',id:@shop.id,body:'好吃的面',rating:5,tags:['好吃']}.merge(data))[:query][:reply])
   end
+  def test_removed_personal_export_endpoint
+    session=ActionDispatch::Integration::Session.new(Rails.application);session.host!('community.test')
+    session.get('/food/my-data')
+    assert_equal 404,session.response.status
+  end
+
   def test_contributors_match_public_shop_counts_and_latest_contribution
     @shop.update!(created_at:3.days.ago)
     A::Shop.create!(name:'旧店',area:'南门',user_id:@alice.id,created_at:2.days.ago)
@@ -99,7 +105,7 @@ class SeekTest < Minitest::Test
     call(@alice,'propose',{name:'新店',area:'西门',body:'推荐',reason:'好吃'});n=A::Proposal.last
     call(@admin,'review_proposal',{id:n.id,decision:'approve',reason:'欢迎'});assert_equal @alice.id,A::Shop.find(n.reload.shop_id).user_id
   end
-  def test_dishes_favorites_reports_export_and_lifecycle
+  def test_dishes_favorites_reports_and_lifecycle
     call(@alice,'dish',{shop_id:@shop.id,name:'牛肉面',price:18,body:'牛肉多',tag:'must'});d=A::Dish.last
     assert_equal '必点',state(view:'shop',id:@shop.id)[:dishes][0][:tag_label]
     call(@bob,'favorite',{id:@shop.id});assert_equal 1,state(@bob,view:'favorites')[:shops].length
@@ -107,7 +113,6 @@ class SeekTest < Minitest::Test
     assert_raises(Discourse::InvalidAccess) { state(@bob,view:'admin') };call(@admin,'resolve_report',{id:r.id});assert r.reload.handled_at
     c=comment(@alice);call(@alice,'react',{kind:'Dish',id:d.id,value:1});call(@bob,'react',{kind:'Dish',id:d.id,value:1})
     A::UserLifecycle.transfer(@alice.id,@bob.id);assert_equal @bob.id,d.reload.user_id;assert_equal 1,A::Reaction.count
-    assert_equal [c.id],A::UserLifecycle.export(@bob.id)[:comments].map { |x| x['id'] }
     A::UserLifecycle.purge(@bob.id);assert_equal 'deleted',c.reload.status;assert_equal 'deleted',d.reload.status;assert_empty A::Reaction.all;assert_nil @shop.reload.user_id
   end
   def test_search_price_sort_pagination_and_legacy
@@ -117,8 +122,9 @@ class SeekTest < Minitest::Test
     assert_equal [@shop.id],state(view:'shops',area:'南门')[:shops].map { |s| s[:id] }
     A::Legacy.create!(source:'Shop',legacy_id:'55',target_kind:'Shop',target_id:@shop.id,data:{})
     assert_equal 'likes',A::Service.legacy_query('shops/55',{'commentSort'=>'likes'})[:comments_sort]
-    call(@bob,'import_favorites',{ids:'[55]'});assert_equal 1,A::Favorite.count
-    assert_raises(A::Error) { call(@bob,'import_favorites',{ids:'[55,999999]'}) };assert_equal 1,A::Favorite.count
+    assert_raises(A::Error) { call(@bob,'import_favorites',{ids:'[55]'}) }
+    assert_equal 0,A::Favorite.count
+    assert_empty A::Service.state(@bob,{'view'=>'favorites'})[:forms]
     assert_equal 3,A::Service.tag_summary(A::Comment.where(id:[]).to_a+[A::Comment.new(tags:A::Service::REVIEW_TAGS,parent_id:nil)]).length
   end
   def test_import_preserves_historical_authors_reactions_and_no_login

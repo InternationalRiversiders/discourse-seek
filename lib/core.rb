@@ -101,7 +101,7 @@ module DiscourseSeek
   end
   class MainController < ::ApplicationController
     requires_plugin 'discourse-seek'
-    skip_before_action :check_xhr, only:[:index,:media,:legacy,:export]
+    skip_before_action :check_xhr, only:[:index,:media,:legacy]
     skip_before_action :redirect_to_login_if_required, only:[:index,:state,:media,:legacy]
     before_action :enabled!
     rescue_from Error,ArgumentError do |e| render_json_dump({errors:[e.message]},status:422);end
@@ -136,9 +136,6 @@ module DiscourseSeek
     def legacy
       query=params.permit(:area,:category,:price,:status,:sort,:search,:minPrice,:maxPrice,:minRating,:commentSort,:commentFilter,:dishSort,:tab,:mode).to_h
       redirect_to('/food?'+Service.legacy_query(params[:path].to_s.delete_suffix('/'),query).to_query,allow_other_host:false)
-    end
-    def export
-      Access.check!(current_user);response.headers['Cache-Control']='private, no-store';send_data(JSON.pretty_generate(UserLifecycle.export(current_user.id)),type:'application/json',filename:'my-food-data.json')
     end
     private
     def enabled!;raise Discourse::NotFound unless SiteSetting.food_enabled;end

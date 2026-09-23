@@ -1,9 +1,6 @@
 # frozen_string_literal: true
 module DiscourseSeek
   module UserLifecycle
-    def self.export(id)
-      {exported_at:Time.current.iso8601,shops:Shop.where(user_id:id).as_json,comments:Comment.where(user_id:id).as_json,dishes:Dish.where(user_id:id).as_json,favorites:Favorite.where(user_id:id).as_json,proposals:Proposal.where(user_id:id).as_json(except:[:reviewer_id]),reactions:Reaction.where(user_id:id).as_json}
-    end
     def self.transfer(source,target)
       return if source==target
       Record.transaction do

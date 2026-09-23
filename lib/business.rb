@@ -186,7 +186,6 @@ module DiscourseSeek
         elsif view=='favorites'
           ids=Access.member?(user) ? Favorite.where(user_id:user.id).pluck(:shop_id) : q['ids'].to_s.split(',').first(500).map(&:to_i)
           rows=rows.select { |s| ids.include?(s[:id]) }
-          out[:forms]=[Ui.form('导入旧版收藏','import_favorites',[Ui.field('ids','收藏 JSON 数组',nil,type:'textarea',required:true)],button:'导入收藏')] if write
         end
         out[:shops],out[:pagination]=pagination(rows,q)
       when 'shop'
@@ -264,13 +263,6 @@ module DiscourseSeek
       when 'favorite'
         s=visible!(Shop.find(Shared.id(data['id'])),user);Shared.lock("favorite:#{user.id}:#{s.id}")
         scope=Favorite.where(user_id:user.id,shop_id:s.id);scope.exists? ? scope.delete_all : scope.create!;{}
-      when 'import_favorites'
-        ids=JSON.parse(data['ids'].to_s);raise Error,'应为最多 500 个旧店铺编号的 JSON 数组' unless ids.is_a?(Array) && ids.size<=500
-        ids.uniq.each do |id|
-          row=Legacy.find_by(source:'Shop',legacy_id:id.to_s);raise Error,"旧店铺编号 #{id} 不存在" unless row && Shop.exists?(id:row.target_id,status:'visible')
-          Favorite.create_or_find_by!(user_id:user.id,shop_id:row.target_id)
-        end
-        {message:"已导入 #{ids.uniq.length} 家收藏"}
       when 'comment'
         klass={'Shop'=>Shop,'AboutPage'=>AboutPage}[data['kind']];raise Error,'只能点评门店或回复关于页面' unless klass
         item=visible!(klass.lock.find(Shared.id(data['id'])),user);parent=data['parent_id'].present? ? Comment.find(Shared.id(data['parent_id'])) : nil
