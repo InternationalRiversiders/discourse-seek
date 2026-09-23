@@ -233,3 +233,15 @@
   > a[data-user-card] { display: block; width: 100%; height: 100%; }
   .avatar { display: block; width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
 }
+
+// Keep variable-height cards compact without moving their DOM or draft inputs.
+.food-native .food-grid.is-card-masonry {
+  grid-auto-rows: 1px;
+  grid-auto-flow: row;
+  row-gap: 0;
+  align-items: start;
+  > * {
+    grid-row-end: span var(--card-row-span, 1);
+    align-self: start;
+  }
+}
