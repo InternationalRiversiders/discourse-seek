@@ -1,3 +1,4 @@
+import queuedImage from "../modifiers/queued-image";
 import ForumUser from "./food-user";
 import DUserAvatar from "discourse/ui-kit/d-user-avatar";
 import Component from "@glimmer/component";
@@ -17,7 +18,7 @@ export default class extends Component {
         {{#if @entry.parent}}<blockquote>回复 <ForumUser @user={{@entry.parent.author}} @name={{@entry.parent.author.name}} @hideAvatar={{true}} />：{{@entry.parent.body}}</blockquote>{{/if}}
         <p class="food-body">{{@entry.body}}</p>
         <div class="food-tags">{{#each @entry.tags as |tag|}}<span>{{tag}}</span>{{/each}}</div>
-        <div class="food-photos">{{#each @entry.images as |url|}}<button type="button" {{on "click" (fn @photo url)}} aria-label="放大图片"><img src={{url}} alt="校友实拍" loading="lazy" /></button>{{/each}}</div>
+        <div class="food-photos">{{#each @entry.images as |url|}}<button type="button" {{on "click" (fn @photo url)}} aria-label="放大图片"><img {{queuedImage url}} alt="校友实拍" loading="lazy" /></button>{{/each}}</div>
         {{#if @entry.missing_media_count}}<small class="food-muted">{{@entry.missing_media_count}} 张历史图片已缺失</small>{{/if}}
         <footer><button class="btn btn-flat {{if @entry.liked 'is-active'}}" disabled={{if @busy true (unless @entry.can_write true)}} aria-label="点赞" {{on "click" (fn @react @entry)}}>{{dIcon "heart"}} {{@entry.likes}}</button>
           {{#if @entry.can_write}}{{#if (eq @entry.kind "Comment")}}<button class="btn btn-flat" {{on "click" (fn @reply @entry)}}>{{dIcon "comment"}} 回复</button>{{/if}}<button class="btn btn-flat" {{on "click" (fn @report @entry)}}>{{dIcon "flag"}} 举报</button>{{/if}}

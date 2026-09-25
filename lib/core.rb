@@ -130,8 +130,15 @@ module DiscourseSeek
       render_json_dump({errors:['无法处理此图片']},status:422)
     end
     def media
-      Access.read!(current_user);item=Media.find(params[:id]);raise Discourse::InvalidAccess unless Service.media_allowed?(current_user,item)
-      response.headers['Cache-Control']='private, no-store';response.headers['X-Content-Type-Options']='nosniff';send_data(item.bytes,type:'image/jpeg',disposition:'inline')
+      Access.read!(current_user)
+      item=Media.select(:id,:user_id,:token,:size,:updated_at).find(params[:id])
+      raise Discourse::InvalidAccess unless Service.media_allowed?(current_user,item)
+      # Every reuse revalidates access, even when the browser already has bytes.
+      response.headers['X-Content-Type-Options']='nosniff'
+      modified=stale?(etag:[item.token,item.updated_at,current_user&.id],public:false)
+      response.cache_control.replace(no_cache:true,extras:['private'])
+      return unless modified
+      send_data(Media.where(id:item.id).pick(:bytes),type:'image/jpeg',disposition:'inline')
     end
     def legacy
       query=params.permit(:area,:category,:price,:status,:sort,:search,:minPrice,:maxPrice,:minRating,:commentSort,:commentFilter,:dishSort,:tab,:mode).to_h

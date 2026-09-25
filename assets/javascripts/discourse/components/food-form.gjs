@@ -1,3 +1,4 @@
+import queuedImage from "../modifiers/queued-image";
 import Component from "@glimmer/component";
 import { tracked } from "@glimmer/tracking";
 import { action } from "@ember/object";
@@ -137,7 +138,7 @@ export default class extends Component {
                         selected={{eq choice.value field.value}}
                       >{{choice.label}}</option>{{/each}}</select>
                 {{else if (eq field.type "checks")}}<span class="food-checks">{{#each field.options as |choice|}}<label><input type="checkbox" name={{field.name}} value={{choice.value}} />{{choice.label}}</label>{{/each}}</span>
-                {{else if (eq field.type "existing_images")}}<span class="food-checks">{{#each field.images as |image|}}<label><input type="checkbox" name={{field.name}} value={{image.id}} checked /><img src={{image.url}} alt="保留此图片" /></label>{{/each}}</span>
+                {{else if (eq field.type "existing_images")}}<span class="food-checks">{{#each field.images as |image|}}<label><input type="checkbox" name={{field.name}} value={{image.id}} checked /><img {{queuedImage image.url}} alt="保留此图片" /></label>{{/each}}</span>
                 {{else if (eq field.type "checkbox")}}<input
                     type="checkbox"
                     name={{field.name}}
@@ -167,7 +168,7 @@ export default class extends Component {
       {{#if this.previews}}<div class="river-images">{{#each
             this.previews
             as |url index|
-          }}<div class="river-image-preview"><img src={{url}} alt="已上传的图片" /><button class="btn btn-flat" type="button" {{on "click" (fn this.remove index)}}>移除</button></div>{{/each}}</div>{{/if}}
+          }}<div class="river-image-preview"><img {{queuedImage url}} alt="已上传的图片" /><button class="btn btn-flat" type="button" {{on "click" (fn this.remove index)}}>移除</button></div>{{/each}}</div>{{/if}}
       {{#if this.error}}<p
           role="alert"
           class="river-error"

@@ -1,3 +1,4 @@
+import queuedImage from "../modifiers/queued-image";
 import Component from "@glimmer/component";
 import { on } from "@ember/modifier";
 import { fn } from "@ember/helper";
@@ -7,7 +8,7 @@ export default class extends Component {
   <template>
     <article class="food-shop {{if (eq @shop.business_status 'closed') 'is-closed'}}">
       <a class="food-shop-cover" href={{@shop.url}} {{on "click" @visit}}>
-        {{#if @shop.cover}}<img src={{@shop.cover}} alt={{@shop.name}} loading="lazy" />{{else}}<span class="food-no-photo">{{dIcon "utensils"}}<small>等你来晒美食</small></span>{{/if}}
+        {{#if @shop.cover}}<img {{queuedImage @shop.cover}} alt={{@shop.name}} loading="lazy" />{{else}}<span class="food-no-photo">{{dIcon "utensils"}}<small>等你来晒美食</small></span>{{/if}}
         {{#if (eq @shop.business_status "closed")}}<span class="food-closed">暂停营业</span>{{/if}}
       </a>
       <div class="food-shop-content">
